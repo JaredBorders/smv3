@@ -269,6 +269,29 @@ interface IEngine {
 
     /// @notice modify the collateral of an
     /// account identified by the accountId
+    /// via a zap of $USDC into/out of $sStataUSDC
+    /// @dev when _amount is positive ->
+    ///     (1) transfers $USDC into the contract
+    ///     (2) zaps $USDC into $sStataUSDC
+    ///     (3) adds the $sStataUSDC to the account's collateral
+    /// @dev when _amount is negative ->
+    ///     (1) removes the $sStataUSDC from the account's collateral
+    ///     (2) zaps $sStataUSDC into $USDC
+    ///     (3) transfers $USDC to the caller
+    /// @dev if _amount is zero, Synthetix v3 wrapper
+    /// will throw an error
+    /// @param _accountId the account to modify
+    /// @param _amount the amount of collateral
+    /// to add or remove (negative to remove)
+    /// @param _zapMinAmountOut tolerable amount of sStataUSDC to receive from zap $USDC -> $sStataUSDC
+    function modifyCollateralZapStata(
+        uint128 _accountId,
+        int256 _amount,
+        uint256 _zapMinAmountOut
+    ) external payable;
+
+    /// @notice modify the collateral of an
+    /// account identified by the accountId
     /// via a zap of $collateral into/out of its synth
     /// @dev This function handles both wrapping and unwrapping of collateral,
     /// as well as modifying it in the perps market
