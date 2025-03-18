@@ -76,6 +76,7 @@ contract Bootstrap is
     IERC20 public sUSD;
     IERC20 public USDC;
     IERC20 public WETH;
+    IERC20 public STATAUSDC;
     IERC20 public cbBTC;
     IERC20 public cbETH;
     IERC20 public wstETH;
@@ -105,7 +106,8 @@ contract Bootstrap is
             address _wethAddress,
             address _cbBTCAddress,
             address _cbETHAddress,
-            address _wstETHAddress
+            address _wstETHAddress,
+            address _stataAddress
         ) = bootstrap.init();
 
         engine = Engine(_engineAddress);
@@ -118,6 +120,7 @@ contract Bootstrap is
         cbBTC = IERC20(_cbBTCAddress);
         cbETH = IERC20(_cbETHAddress);
         wstETH = IERC20(_wstETHAddress);
+        STATAUSDC = IERC20(_stataAddress);
         synthMinter = new SynthMinter(_sUSDAddress, _spotMarketProxyAddress);
         pDAO = _pDAOAddress;
         zap = _zapAddress;
@@ -260,6 +263,7 @@ contract BootstrapBase is Setup, BaseParameters {
             address,
             address,
             address,
+            address,
             address
         )
     {
@@ -271,7 +275,8 @@ contract BootstrapBase is Setup, BaseParameters {
             zap: ZAP,
             pay: PAY,
             usdc: USDC,
-            weth: WETH
+            weth: WETH,
+            sStataUSDC: BASE_SSTATA
         });
 
         EngineExposed engineExposed = new EngineExposed({
@@ -282,7 +287,8 @@ contract BootstrapBase is Setup, BaseParameters {
             _zap: ZAP,
             _pay: PAY,
             _usdc: USDC,
-            _weth: WETH
+            _weth: WETH,
+            _sStataUSDCProxy: BASE_SSTATA
         });
 
         return (
@@ -298,7 +304,8 @@ contract BootstrapBase is Setup, BaseParameters {
             WETH,
             CBBTC,
             CBETH,
-            WSTETH
+            WSTETH,
+            BASE_SSTATA
         );
     }
 }

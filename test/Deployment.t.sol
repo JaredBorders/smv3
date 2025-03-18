@@ -20,6 +20,7 @@ contract DeploymentTest is Test, Setup {
     address internal zap = address(0x7);
     address internal weth = address(0x8);
     address payable internal pay = payable(address(0x9));
+    address internal stataUSDC = address(0x10);
 
     /// keccak256(abi.encodePacked("Synthetic USD Coin Spot Market"))
     bytes32 internal constant _HASHED_SUSDC_NAME =
@@ -45,7 +46,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         });
 
         assertTrue(address(engine) != address(0x0));
@@ -60,7 +62,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -75,7 +78,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -90,7 +94,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -105,7 +110,8 @@ contract DeploymentTest is Test, Setup {
             zap: address(0),
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -120,7 +126,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: payable(address(0)),
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -135,7 +142,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: address(0),
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -150,7 +158,24 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: address(0)
+            weth: address(0),
+            sStataUSDC: stataUSDC
+        }) {} catch (bytes memory reason) {
+            assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
+        }
+    }
+
+    function test_deploy_stata_zero_address() public {
+        try setup.deploySystem({
+            perpsMarketProxy: perpsMarketProxy,
+            spotMarketProxy: spotMarketProxy,
+            sUSDProxy: sUSDProxy,
+            pDAO: pDAO,
+            zap: zap,
+            pay: pay,
+            usdc: usdc,
+            weth: weth,
+            sStataUSDC: address(0)
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
