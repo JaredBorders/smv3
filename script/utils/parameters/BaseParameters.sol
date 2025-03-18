@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 contract BaseParameters {
     // Deployer base
-    address public constant PDAO = 0x2f4004Bc32cc5D18a62fE26E35A0881d5397c549;
+    address public constant PDAO = 0x85891D99882991564417C51c8e0c15A2fb13cf53;
 
     address public constant PERPS_MARKET_PROXY = address(0);
 
