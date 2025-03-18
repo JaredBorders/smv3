@@ -438,6 +438,21 @@ interface IEngine {
         uint256 _amountOutMinimum
     ) external payable;
 
+    /// @notice transfer $sStataUSDC into the engine,
+    /// zap it into $sUSD, and then credit the account
+    /// identified by the accountId
+    /// @dev _amount of $sStataUSDC transferred into the
+    /// engine may differ from the amount credited
+    /// to the account due to conversions
+    /// @param _accountId the id of the account to credit
+    /// @param _amount the amount of $sStataUSDC to transfer
+    /// @param _amountOutMinimum tolerable minimum amount of sUSD to receive
+    function creditAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _amountOutMinimum
+    ) external payable;
+
     /// @notice withdraw $sUSD from the engine and
     /// debit the account identified by the accountId
     /// @param _accountId the id of the account to debit
@@ -458,6 +473,21 @@ interface IEngine {
     /// @param _zapTolerance the tolerance of the zap
     /// expected to receive, otherwise the transaction will revert.
     function debitAccountZap(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _zapTolerance
+    ) external payable;
+
+    /// @notice debit the account identified by the accountId
+    /// by the amount specified. The amount is then zapped
+    /// into $sStataUSDC and transferred to the caller
+    /// @dev _amount of $sStataUSDC transferred out of the
+    /// engine may differ from the amount debited
+    /// from the account due to conversions
+    /// @param _accountId the id of the account to debit
+    /// @param _amount the amount of $sUSD to debit
+    /// @param _zapTolerance the minimum acceptable amount of sStataUSDC to receive
+    function debitAccountZapStata(
         uint128 _accountId,
         uint256 _amount,
         uint256 _zapTolerance

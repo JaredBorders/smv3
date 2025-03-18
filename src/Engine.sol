@@ -804,6 +804,30 @@ contract Engine is
     }
 
     /// @inheritdoc IEngine
+    function creditAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _amountOutMinimum
+    ) external payable override {
+        SSTATA_USDC.transferFrom(msg.sender, address(this), _amount);
+
+        SSTATA_USDC.approve(address(zap), _amount);
+
+        // zap $sStataUSDC -> $USDC
+        uint256 usdcAmount = zap.zapOut(_amount, 1, address(this));
+
+        USDC.approve(address(zap), usdcAmount);
+
+        // zap $USDC -> $sUSD
+        uint256 susdAmount =
+            zap.zapInUSDX(usdcAmount, _amountOutMinimum, address(this));
+
+        credit[_accountId] += susdAmount;
+
+        emit Credited(_accountId, susdAmount);
+    }
+
+    /// @inheritdoc IEngine
     function debitAccount(uint128 _accountId, uint256 _amount)
         external
         payable
@@ -835,6 +859,32 @@ contract Engine is
         uint256 usdcAmount = zap.zapOutUSDX(_amount, _zapTolerance, msg.sender);
 
         emit Debited(_accountId, usdcAmount);
+    }
+
+    /// @inheritdoc IEngine
+    function debitAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _zapTolerance
+    ) external payable override {
+        if (!isAccountOwner(_accountId, msg.sender)) revert Unauthorized();
+
+        if (_amount > credit[_accountId]) revert InsufficientCredit();
+
+        // Decrement account credit prior to transfer
+        credit[_accountId] -= _amount;
+
+        SUSD.approve(address(zap), _amount);
+
+        // zap $sUSD -> $USDC
+        uint256 usdcAmount = zap.zapOutUSDX(_amount, 1, address(this));
+
+        USDC.approve(address(zap), usdcAmount);
+
+        // zap $USDC -> $sStataUSDC
+        uint256 sstataAmount = zap.zapIn(usdcAmount, _zapTolerance, msg.sender);
+
+        emit Debited(_accountId, sstataAmount);
     }
 
     function _debit(address _caller, uint128 _accountId, uint256 _amount)
