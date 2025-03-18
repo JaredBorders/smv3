@@ -24,7 +24,8 @@ contract Setup is Script {
         address zap,
         address payable pay,
         address usdc,
-        address weth
+        address weth,
+        address sStataUSDC
     ) public returns (Engine engine) {
         engine = new Engine({
             _perpsMarketProxy: perpsMarketProxy,
@@ -34,7 +35,8 @@ contract Setup is Script {
             _zap: zap,
             _pay: pay,
             _usdc: usdc,
-            _weth: weth
+            _weth: weth,
+            _sStataUSDCProxy: sStataUSDC
         });
     }
 }
@@ -55,7 +57,8 @@ contract DeployBase is Setup, BaseParameters {
             zap: ZAP,
             pay: PAY,
             usdc: USDC,
-            weth: WETH
+            weth: WETH,
+            sStataUSDC: BASE_SSTATA
         });
 
         vm.stopBroadcast();
@@ -78,7 +81,8 @@ contract DeployBaseSepolia is Setup, BaseSepoliaParameters {
             zap: ZAP,
             pay: PAY,
             usdc: USDC,
-            weth: WETH
+            weth: WETH,
+            sStataUSDC: address(0)
         });
 
         vm.stopBroadcast();
