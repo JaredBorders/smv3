@@ -94,6 +94,9 @@ interface IEngine {
     /// @notice thrown when address is zero
     error ZeroAddress();
 
+    /// @notice Error thrown when token implementations don't match expected values
+    error IncorrectToken();
+
     /// @notice thrown when attempting to re-use a nonce
     error InvalidNonce();
 

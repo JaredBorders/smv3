@@ -10,4 +10,5 @@ interface IWETH {
         external
         returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function name() external view returns (string memory);
 }

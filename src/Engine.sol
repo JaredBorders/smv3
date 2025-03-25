@@ -172,6 +172,15 @@ contract Engine is
         WETH = IWETH(_weth);
         SSTATA_USDC = IERC20(_sStataUSDCProxy);
 
+        if (
+            keccak256(abi.encodePacked(USDC.name()))
+                != keccak256(abi.encodePacked("USD Coin"))
+                || keccak256(abi.encodePacked(WETH.name()))
+                    != keccak256(abi.encodePacked("Wrapped Ether"))
+                || keccak256(abi.encodePacked(SSTATA_USDC.name()))
+                    != keccak256(abi.encodePacked("Synthetic Static aUSDC"))
+        ) revert IncorrectToken();
+
         /// @dev pDAO address can be the zero address to
         /// make the Engine non-upgradeable
         pDAO = _pDAO;
