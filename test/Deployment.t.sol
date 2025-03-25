@@ -41,18 +41,6 @@ contract DeploymentTest is Test, Setup, BaseParameters {
     }
 
     function test_deploy() public {
-        // (Engine engine) = setup.deploySystem({
-        //     perpsMarketProxy: perpsMarketProxy,
-        //     spotMarketProxy: spotMarketProxy,
-        //     sUSDProxy: sUSDProxy,
-        //     pDAO: pDAO,
-        //     zap: zap,
-        //     pay: pay,
-        //     usdc: usdc,
-        //     weth: weth,
-        //     sStataUSDC: stataUSDC
-        // });
-
         (Engine engine) = Setup.deploySystem({
             perpsMarketProxy: PERPS_MARKET_PROXY_ANDROMEDA,
             spotMarketProxy: SPOT_MARKET_PROXY_ANDROMEDA,
