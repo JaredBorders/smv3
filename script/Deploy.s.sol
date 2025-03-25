@@ -88,7 +88,7 @@ contract DeployBaseSepolia is Setup, BaseSepoliaParameters {
             pay: PAY,
             usdc: USDC,
             weth: WETH,
-            sStataUSDC: address(0)
+            sStataUSDC: BASE_SSTATA
         });
 
         vm.stopBroadcast();

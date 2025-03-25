@@ -34,4 +34,8 @@ contract BaseSepoliaParameters {
     address public constant ZAP = 0xC9aF789Ae606F69cF8Ed073A04eC92f2354b027d;
 
     address payable public constant PAY = payable(address(0));
+
+    // https://sepolia.basescan.org/address/0xB94c6E4f5162717c6fAb1Eeab8f0296307F91528
+    address public constant BASE_SSTATA =
+        0x729Ef31D86d31440ecBF49f27F7cD7c16c6616d2;
 }

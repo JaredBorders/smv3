@@ -2,8 +2,8 @@
 pragma solidity 0.8.27;
 
 contract BaseParameters {
-    // Deployer base
-    address public constant PDAO = 0x85891D99882991564417C51c8e0c15A2fb13cf53;
+    // Base PDAO address
+    address public constant PDAO = 0xbb63CA5554dc4CcaCa4EDd6ECC2837d5EFe83C82;
 
     address public constant PERPS_MARKET_PROXY = address(0);
 
@@ -42,6 +42,7 @@ contract BaseParameters {
 
     address public constant WSTETH = 0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452;
 
+    // https://basescan.org/address/0x729ef31d86d31440ecbf49f27f7cd7c16c6616d2
     address public constant BASE_SSTATA =
         0x729Ef31D86d31440ecBF49f27F7cD7c16c6616d2;
 }
