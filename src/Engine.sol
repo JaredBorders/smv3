@@ -698,11 +698,11 @@ contract Engine is
         USDC.transferFrom(msg.sender, address(this), amountWithExcess);
 
         USDC.approve(address(zap), amountWithExcess);
-        uint256 usdxAmount =
+        uint256 sUsdAmount =
             zap.zapInSUSD(amountWithExcess, _zapMinAmountOut, address(this));
 
-        SUSD.approve(address(zap), usdxAmount);
-        uint256 remaining = zap.burn(usdxAmount, _accountId);
+        SUSD.approve(address(zap), sUsdAmount);
+        uint256 remaining = zap.burn(sUsdAmount, _accountId);
 
         // zap $sUSD -> $USDC
         /// @dev this sends back any overpaid amount to the user
@@ -714,7 +714,7 @@ contract Engine is
             zap.zapOutSUSD(remaining, 1, msg.sender);
         }
 
-        emit Burned(_accountId, usdxAmount - remaining);
+        emit Burned(_accountId, sUsdAmount - remaining);
     }
 
     /*//////////////////////////////////////////////////////////////

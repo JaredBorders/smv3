@@ -165,9 +165,9 @@ interface IEngine {
         IPerpsMarketProxy.Data order, uint256 synthetixFees, uint256 executorFee
     );
 
-    /// @notice Emitted when USDx is burned for an account
-    /// @param accountId The ID of the account for which USDx was burned
-    /// @param amount The amount of USDx that was burned
+    /// @notice Emitted when sUSD is burned for an account
+    /// @param accountId The ID of the account for which sUSD was burned
+    /// @param amount The amount of sUSD that was burned
     event Burned(uint128 indexed accountId, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
@@ -371,8 +371,8 @@ interface IEngine {
 
     /// @notice Pays off debt for a specified account using USDC
     /// @param _accountId The ID of the account to pay debt for
-    /// @param _amount The amount of USDx to use for paying the debt
-    /// @param _zapMinAmountOut tolerable amount of sUSD to receive from zap $USDC -> $USDx
+    /// @param _amount The amount of sUSD to use for paying the debt
+    /// @param _zapMinAmountOut tolerable amount of sUSD to receive from zap $USDC -> $sUSD
     function payDebtWithUSDC(
         uint128 _accountId,
         uint256 _amount,
