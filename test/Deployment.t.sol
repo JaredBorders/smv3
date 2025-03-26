@@ -3,8 +3,7 @@ pragma solidity 0.8.27;
 
 import {Engine, Setup} from "script/Deploy.s.sol";
 import {IEngine} from "src/interfaces/IEngine.sol";
-import {IERC20} from "src/utils/zap/interfaces/IERC20.sol";
-import {Errors} from "src/utils/zap/utils/Errors.sol";
+import {IERC20} from "src/interfaces/tokens/IERC20.sol";
 import {Test} from "lib/forge-std/src/Test.sol";
 import {BaseParameters} from "script/utils/parameters/BaseParameters.sol";
 

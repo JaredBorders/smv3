@@ -5,7 +5,6 @@ import {Bootstrap} from "test/utils/Bootstrap.sol";
 import {MulticallerWithSender as MWS} from "src/utils/MulticallerWithSender.sol";
 import {EIP7412} from "src/utils/EIP7412.sol";
 import {EIP7412Mock} from "test/utils/mocks/EIP7412Mock.sol";
-import {IERC20} from "src/utils/zap/interfaces/IERC20.sol";
 
 contract MulticallerWithSenderTest is Bootstrap {
     MWS mws;
