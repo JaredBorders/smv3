@@ -16,7 +16,7 @@ import {MathLib} from "src/libraries/MathLib.sol";
 import {MulticallablePayable} from "src/utils/MulticallablePayable.sol";
 import {Pay} from "src/utils/Pay.sol";
 import {SignatureCheckerLib} from "src/libraries/SignatureCheckerLib.sol";
-import {Zap} from "src/utils/zap/Zap.sol";
+import {Zap} from "zap/src/Zap.sol";
 
 /// @custom:upgradability
 import {UUPSUpgradeable} from
@@ -403,7 +403,7 @@ contract Engine is
 
             // zap $USDC -> $sUSD
             uint256 susdAmount =
-                zap.zapInUSDX(_amount.abs256(), _zapMinAmountOut, address(this));
+                zap.zapInSUSD(_amount.abs256(), _zapMinAmountOut, address(this));
 
             SUSD.approve(address(PERPS_MARKET_PROXY), susdAmount);
 
@@ -421,7 +421,7 @@ contract Engine is
             /// @dev given the amount is negative,
             /// simply casting (int -> uint) is unsafe, thus we use .abs()
             SUSD.approve(address(zap), _amount.abs256());
-            zap.zapOutUSDX(_amount.abs256(), _zapMinAmountOut, msg.sender);
+            zap.zapOutSUSD(_amount.abs256(), _zapMinAmountOut, msg.sender);
         }
     }
 
@@ -699,7 +699,7 @@ contract Engine is
 
         USDC.approve(address(zap), amountWithExcess);
         uint256 usdxAmount =
-            zap.zapInUSDX(amountWithExcess, _zapMinAmountOut, address(this));
+            zap.zapInSUSD(amountWithExcess, _zapMinAmountOut, address(this));
 
         SUSD.approve(address(zap), usdxAmount);
         uint256 remaining = zap.burn(usdxAmount, _accountId);
@@ -711,7 +711,7 @@ contract Engine is
         /// because converting back to USDC will be < 0
         SUSD.approve(address(zap), remaining);
         if (remaining > USDC_DUST_THRESHOLD) {
-            zap.zapOutUSDX(remaining, 1, msg.sender);
+            zap.zapOutSUSD(remaining, 1, msg.sender);
         }
 
         emit Burned(_accountId, usdxAmount - remaining);
@@ -805,7 +805,7 @@ contract Engine is
 
         // zap $USDC -> $sUSD
         uint256 susdAmount =
-            zap.zapInUSDX(_amount, _amountOutMinimum, address(this));
+            zap.zapInSUSD(_amount, _amountOutMinimum, address(this));
 
         credit[_accountId] += susdAmount;
 
@@ -829,7 +829,7 @@ contract Engine is
 
         // zap $USDC -> $sUSD
         uint256 susdAmount =
-            zap.zapInUSDX(usdcAmount, _amountOutMinimum, address(this));
+            zap.zapInSUSD(usdcAmount, _amountOutMinimum, address(this));
 
         credit[_accountId] += susdAmount;
 
@@ -865,7 +865,7 @@ contract Engine is
         SUSD.approve(address(zap), _amount);
 
         // zap $sUSD -> $USDC
-        uint256 usdcAmount = zap.zapOutUSDX(_amount, _zapTolerance, msg.sender);
+        uint256 usdcAmount = zap.zapOutSUSD(_amount, _zapTolerance, msg.sender);
 
         emit Debited(_accountId, usdcAmount);
     }
@@ -886,7 +886,7 @@ contract Engine is
         SUSD.approve(address(zap), _amount);
 
         // zap $sUSD -> $USDC
-        uint256 usdcAmount = zap.zapOutUSDX(_amount, 1, address(this));
+        uint256 usdcAmount = zap.zapOutSUSD(_amount, 1, address(this));
 
         USDC.approve(address(zap), usdcAmount);
 

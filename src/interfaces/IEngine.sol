@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IPerpsMarketProxy} from "src/interfaces/synthetix/IPerpsMarketProxy.sol";
 import {ISpotMarketProxy} from "src/interfaces/synthetix/ISpotMarketProxy.sol";
 import {IERC20} from "src/interfaces/tokens/IERC20.sol";
-import {Zap} from "src/utils/zap/Zap.sol";
+import {Zap} from "zap/src/Zap.sol";
 
 /// @title Kwenta Smart Margin v3: Engine Interface
 /// @notice Conditional Order -> "co"
