@@ -4,7 +4,7 @@ pragma solidity 0.8.27;
 import {IPerpsMarketProxy} from "src/interfaces/synthetix/IPerpsMarketProxy.sol";
 import {ISpotMarketProxy} from "src/interfaces/synthetix/ISpotMarketProxy.sol";
 import {IERC20} from "src/interfaces/tokens/IERC20.sol";
-import {Zap} from "src/utils/zap/Zap.sol";
+import {Zap} from "zap/src/Zap.sol";
 
 /// @title Kwenta Smart Margin v3: Engine Interface
 /// @notice Conditional Order -> "co"
@@ -94,6 +94,9 @@ interface IEngine {
     /// @notice thrown when address is zero
     error ZeroAddress();
 
+    /// @notice Error thrown when token implementations don't match expected values
+    error IncorrectToken();
+
     /// @notice thrown when attempting to re-use a nonce
     error InvalidNonce();
 
@@ -162,9 +165,9 @@ interface IEngine {
         IPerpsMarketProxy.Data order, uint256 synthetixFees, uint256 executorFee
     );
 
-    /// @notice Emitted when USDx is burned for an account
-    /// @param accountId The ID of the account for which USDx was burned
-    /// @param amount The amount of USDx that was burned
+    /// @notice Emitted when sUSD is burned for an account
+    /// @param accountId The ID of the account for which sUSD was burned
+    /// @param amount The amount of sUSD that was burned
     event Burned(uint128 indexed accountId, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
@@ -269,6 +272,29 @@ interface IEngine {
 
     /// @notice modify the collateral of an
     /// account identified by the accountId
+    /// via a zap of $USDC into/out of $sStataUSDC
+    /// @dev when _amount is positive ->
+    ///     (1) transfers $USDC into the contract
+    ///     (2) zaps $USDC into $sStataUSDC
+    ///     (3) adds the $sStataUSDC to the account's collateral
+    /// @dev when _amount is negative ->
+    ///     (1) removes the $sStataUSDC from the account's collateral
+    ///     (2) zaps $sStataUSDC into $USDC
+    ///     (3) transfers $USDC to the caller
+    /// @dev if _amount is zero, Synthetix v3 wrapper
+    /// will throw an error
+    /// @param _accountId the account to modify
+    /// @param _amount the amount of collateral
+    /// to add or remove (negative to remove)
+    /// @param _zapMinAmountOut tolerable amount of sStataUSDC to receive from zap $USDC -> $sStataUSDC
+    function modifyCollateralZapStata(
+        uint128 _accountId,
+        int256 _amount,
+        uint256 _zapMinAmountOut
+    ) external payable;
+
+    /// @notice modify the collateral of an
+    /// account identified by the accountId
     /// via a zap of $collateral into/out of its synth
     /// @dev This function handles both wrapping and unwrapping of collateral,
     /// as well as modifying it in the perps market
@@ -345,8 +371,8 @@ interface IEngine {
 
     /// @notice Pays off debt for a specified account using USDC
     /// @param _accountId The ID of the account to pay debt for
-    /// @param _amount The amount of USDx to use for paying the debt
-    /// @param _zapMinAmountOut tolerable amount of sUSD to receive from zap $USDC -> $USDx
+    /// @param _amount The amount of sUSD to use for paying the debt
+    /// @param _zapMinAmountOut tolerable amount of sUSD to receive from zap $USDC -> $sUSD
     function payDebtWithUSDC(
         uint128 _accountId,
         uint256 _amount,
@@ -415,6 +441,21 @@ interface IEngine {
         uint256 _amountOutMinimum
     ) external payable;
 
+    /// @notice transfer $sStataUSDC into the engine,
+    /// zap it into $sUSD, and then credit the account
+    /// identified by the accountId
+    /// @dev _amount of $sStataUSDC transferred into the
+    /// engine may differ from the amount credited
+    /// to the account due to conversions
+    /// @param _accountId the id of the account to credit
+    /// @param _amount the amount of $sStataUSDC to transfer
+    /// @param _amountOutMinimum tolerable minimum amount of sUSD to receive
+    function creditAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _amountOutMinimum
+    ) external payable;
+
     /// @notice withdraw $sUSD from the engine and
     /// debit the account identified by the accountId
     /// @param _accountId the id of the account to debit
@@ -435,6 +476,21 @@ interface IEngine {
     /// @param _zapTolerance the tolerance of the zap
     /// expected to receive, otherwise the transaction will revert.
     function debitAccountZap(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _zapTolerance
+    ) external payable;
+
+    /// @notice debit the account identified by the accountId
+    /// by the amount specified. The amount is then zapped
+    /// into $sStataUSDC and transferred to the caller
+    /// @dev _amount of $sStataUSDC transferred out of the
+    /// engine may differ from the amount debited
+    /// from the account due to conversions
+    /// @param _accountId the id of the account to debit
+    /// @param _amount the amount of $sUSD to debit
+    /// @param _zapTolerance the minimum acceptable amount of sStataUSDC to receive
+    function debitAccountZapStata(
         uint128 _accountId,
         uint256 _amount,
         uint256 _zapTolerance

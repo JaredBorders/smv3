@@ -14,7 +14,8 @@ contract EngineExposed is Engine {
         address _zap,
         address payable _pay,
         address _usdc,
-        address _weth
+        address _weth,
+        address _sStataUSDCProxy
     )
         Engine(
             _perpsMarketProxy,
@@ -24,7 +25,8 @@ contract EngineExposed is Engine {
             _zap,
             _pay,
             _usdc,
-            _weth
+            _weth,
+            _sStataUSDCProxy
         )
     {}
 

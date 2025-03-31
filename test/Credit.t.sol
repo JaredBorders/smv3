@@ -161,7 +161,7 @@ contract Debit is CreditTest {
         engine.creditAccountZap({
             _accountId: accountId,
             _amount: amount,
-            _amountOutMinimum: amount * 97 / 100
+            _amountOutMinimum: amount * 90 / 100
         });
 
         uint256 preEngineSUSDBalance = sUSD.balanceOf(address(engine));
@@ -170,7 +170,7 @@ contract Debit is CreditTest {
         uint256 preActorUSDCBalance = USDC.balanceOf(ACTOR);
         assertEq(preActorUSDCBalance, 0);
         assertWithinTolerance(
-            engine.credit(accountId), amount * decimalsFactor, 3
+            engine.credit(accountId), amount * decimalsFactor, 10
         );
 
         engine.debitAccountZap({

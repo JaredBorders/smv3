@@ -3,11 +3,12 @@
         "EngineImplementation": "0x7219cECaA0923dDfE7cDB3b782Aff7a69A2Ae478",
         "EngineProxy": "0xe331a7eeC851Ba702aA8BF43070a178451d6D28E"
     },
-    "test": {
-        "EngineImplementation": "0x14cD85154508467B1b02eA7e94FbAB550631a71D",
-        "EngineProxy": "0xbEF1a26c76F4FcE3efbcE8Eff525c5925Cd75c1D",
-        "MulticallerWithSender": "0x45316C04257bA9bd8CA00587Fe74eCD74938C3a2",
-        "Zap": "0xaEd5977ed65d340b4B8e58Ec3EC3b04b19308f21"
+    "test Stata": {
+        "EngineImplementation": "0x7A048A0537d562DE3d7e7d117837cA82875A6a73",
+        "EngineProxy": "0x01Ec4C412BA5C706039F8f8159247B184A0ab5C6",
+        "MulticallerWithSender": "0x7e54C7D625D89BAF91B1818f80DaCDeeaea40AB7",
+        "Zap": "0x547f8fE03b4C4F6A031e69a52891eD016fC9eA49",
+        "Pay": "0x067e8C201Cc9CF33e556f8A0d75b91276c9af3D6"
     },
     "Multi Collateral": {
         "Zap": "0x41AE8b823850D96088419992c9538198b72cA230",

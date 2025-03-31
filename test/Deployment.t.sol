@@ -3,11 +3,11 @@ pragma solidity 0.8.27;
 
 import {Engine, Setup} from "script/Deploy.s.sol";
 import {IEngine} from "src/interfaces/IEngine.sol";
-import {IERC20} from "src/utils/zap/interfaces/IERC20.sol";
-import {Errors} from "src/utils/zap/utils/Errors.sol";
+import {IERC20} from "src/interfaces/tokens/IERC20.sol";
 import {Test} from "lib/forge-std/src/Test.sol";
+import {BaseParameters} from "script/utils/parameters/BaseParameters.sol";
 
-contract DeploymentTest is Test, Setup {
+contract DeploymentTest is Test, Setup, BaseParameters {
     Setup setup;
 
     address internal perpsMarketProxy = address(0x1);
@@ -20,10 +20,13 @@ contract DeploymentTest is Test, Setup {
     address internal zap = address(0x7);
     address internal weth = address(0x8);
     address payable internal pay = payable(address(0x9));
+    address internal stataUSDC = address(0x10);
 
     /// keccak256(abi.encodePacked("Synthetic USD Coin Spot Market"))
     bytes32 internal constant _HASHED_SUSDC_NAME =
         0xdb59c31a60f6ecfcb2e666ed077a3791b5c753b5a5e8dc5120f29367b94bbb22;
+
+    address internal dai = address(0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb);
 
     function setUp() public {
         setup = new Setup();
@@ -37,15 +40,16 @@ contract DeploymentTest is Test, Setup {
     }
 
     function test_deploy() public {
-        (Engine engine) = setup.deploySystem({
-            perpsMarketProxy: perpsMarketProxy,
-            spotMarketProxy: spotMarketProxy,
-            sUSDProxy: sUSDProxy,
-            pDAO: pDAO,
-            zap: zap,
-            pay: pay,
-            usdc: usdc,
-            weth: weth
+        (Engine engine) = Setup.deploySystem({
+            perpsMarketProxy: PERPS_MARKET_PROXY_ANDROMEDA,
+            spotMarketProxy: SPOT_MARKET_PROXY_ANDROMEDA,
+            sUSDProxy: USD_PROXY_ANDROMEDA,
+            pDAO: PDAO,
+            zap: ZAP,
+            pay: PAY,
+            usdc: USDC,
+            weth: WETH,
+            sStataUSDC: BASE_SSTATA
         });
 
         assertTrue(address(engine) != address(0x0));
@@ -60,7 +64,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -75,7 +80,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -90,7 +96,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -105,7 +112,8 @@ contract DeploymentTest is Test, Setup {
             zap: address(0),
             pay: pay,
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -120,7 +128,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: payable(address(0)),
             usdc: usdc,
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -135,7 +144,8 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: address(0),
-            weth: weth
+            weth: weth,
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
         }
@@ -150,9 +160,74 @@ contract DeploymentTest is Test, Setup {
             zap: zap,
             pay: pay,
             usdc: usdc,
-            weth: address(0)
+            weth: address(0),
+            sStataUSDC: stataUSDC
         }) {} catch (bytes memory reason) {
             assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
+        }
+    }
+
+    function test_deploy_stata_zero_address() public {
+        try setup.deploySystem({
+            perpsMarketProxy: perpsMarketProxy,
+            spotMarketProxy: spotMarketProxy,
+            sUSDProxy: sUSDProxy,
+            pDAO: pDAO,
+            zap: zap,
+            pay: pay,
+            usdc: usdc,
+            weth: weth,
+            sStataUSDC: address(0)
+        }) {} catch (bytes memory reason) {
+            assertEq(bytes4(reason), IEngine.ZeroAddress.selector);
+        }
+    }
+
+    function test_deploy_usdc_incorrect_token() public {
+        try setup.deploySystem({
+            perpsMarketProxy: PERPS_MARKET_PROXY_ANDROMEDA,
+            spotMarketProxy: SPOT_MARKET_PROXY_ANDROMEDA,
+            sUSDProxy: USD_PROXY_ANDROMEDA,
+            pDAO: PDAO,
+            zap: ZAP,
+            pay: PAY,
+            usdc: dai,
+            weth: WETH,
+            sStataUSDC: BASE_SSTATA
+        }) {} catch (bytes memory reason) {
+            assertEq(bytes4(reason), IEngine.IncorrectToken.selector);
+        }
+    }
+
+    function test_deploy_weth_incorrect_token() public {
+        try setup.deploySystem({
+            perpsMarketProxy: PERPS_MARKET_PROXY_ANDROMEDA,
+            spotMarketProxy: SPOT_MARKET_PROXY_ANDROMEDA,
+            sUSDProxy: USD_PROXY_ANDROMEDA,
+            pDAO: PDAO,
+            zap: ZAP,
+            pay: PAY,
+            usdc: USDC,
+            weth: dai,
+            sStataUSDC: BASE_SSTATA
+        }) {} catch (bytes memory reason) {
+            assertEq(bytes4(reason), IEngine.IncorrectToken.selector);
+        }
+    }
+
+    function test_deploy_stata_incorrect_token() public {
+        try setup.deploySystem({
+            perpsMarketProxy: PERPS_MARKET_PROXY_ANDROMEDA,
+            spotMarketProxy: SPOT_MARKET_PROXY_ANDROMEDA,
+            sUSDProxy: USD_PROXY_ANDROMEDA,
+            pDAO: PDAO,
+            zap: ZAP,
+            pay: PAY,
+            usdc: USDC,
+            weth: WETH,
+            sStataUSDC: dai
+        }) {} catch (bytes memory reason) {
+            assertEq(bytes4(reason), IEngine.IncorrectToken.selector);
         }
     }
 }

@@ -16,7 +16,7 @@ import {MathLib} from "src/libraries/MathLib.sol";
 import {MulticallablePayable} from "src/utils/MulticallablePayable.sol";
 import {Pay} from "src/utils/Pay.sol";
 import {SignatureCheckerLib} from "src/libraries/SignatureCheckerLib.sol";
-import {Zap} from "src/utils/zap/Zap.sol";
+import {Zap} from "zap/src/Zap.sol";
 
 /// @custom:upgradability
 import {UUPSUpgradeable} from
@@ -55,6 +55,9 @@ contract Engine is
 
     /// @notice "0" synthMarketId represents $sUSD in Synthetix v3
     uint128 internal constant USD_SYNTH_ID = 0;
+
+    /// @notice "3" synthMarketId represents $sStataUSDC in Synthetix v3
+    uint128 internal constant SSTATA_SYNTH_MARKET_ID = 3;
 
     /// @notice "6" synthMarketId represents $WETH in Synthetix v3
     uint128 internal constant WETH_SYNTH_MARKET_ID = 6;
@@ -99,6 +102,9 @@ contract Engine is
     /// @notice USDC contract
     IERC20 public immutable USDC;
 
+    /// @notice $sStataUSDC token/synth contract address
+    IERC20 internal immutable SSTATA_USDC;
+
     /*//////////////////////////////////////////////////////////////
                                  STATE
     //////////////////////////////////////////////////////////////*/
@@ -136,6 +142,7 @@ contract Engine is
     /// @param _zap Zap contract address
     /// @param _usdc $USDC token contract address
     /// @param _weth $WETH token contract address
+    /// @param _sStataUSDCProxy Synthetix v3 $sStataUSDC contract
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
         address _perpsMarketProxy,
@@ -145,12 +152,14 @@ contract Engine is
         address _zap,
         address payable _pay,
         address _usdc,
-        address _weth
+        address _weth,
+        address _sStataUSDCProxy
     ) {
         if (
             _perpsMarketProxy == address(0) || _spotMarketProxy == address(0)
                 || _sUSDProxy == address(0) || _zap == address(0)
                 || _pay == address(0) || _usdc == address(0) || _weth == address(0)
+                || _sStataUSDCProxy == address(0)
         ) revert ZeroAddress();
 
         PERPS_MARKET_PROXY = IPerpsMarketProxy(_perpsMarketProxy);
@@ -161,6 +170,16 @@ contract Engine is
         pay = Pay(_pay);
         USDC = IERC20(_usdc);
         WETH = IWETH(_weth);
+        SSTATA_USDC = IERC20(_sStataUSDCProxy);
+
+        if (
+            keccak256(abi.encodePacked(USDC.name()))
+                != keccak256(abi.encodePacked("USD Coin"))
+                || keccak256(abi.encodePacked(WETH.name()))
+                    != keccak256(abi.encodePacked("Wrapped Ether"))
+                || keccak256(abi.encodePacked(SSTATA_USDC.name()))
+                    != keccak256(abi.encodePacked("Synthetic Static aUSDC"))
+        ) revert IncorrectToken();
 
         /// @dev pDAO address can be the zero address to
         /// make the Engine non-upgradeable
@@ -384,7 +403,7 @@ contract Engine is
 
             // zap $USDC -> $sUSD
             uint256 susdAmount =
-                zap.zapIn(_amount.abs256(), _zapMinAmountOut, address(this));
+                zap.zapInSUSD(_amount.abs256(), _zapMinAmountOut, address(this));
 
             SUSD.approve(address(PERPS_MARKET_PROXY), susdAmount);
 
@@ -402,6 +421,41 @@ contract Engine is
             /// @dev given the amount is negative,
             /// simply casting (int -> uint) is unsafe, thus we use .abs()
             SUSD.approve(address(zap), _amount.abs256());
+            zap.zapOutSUSD(_amount.abs256(), _zapMinAmountOut, msg.sender);
+        }
+    }
+
+    /// @inheritdoc IEngine
+    function modifyCollateralZapStata(
+        uint128 _accountId,
+        int256 _amount,
+        uint256 _zapMinAmountOut
+    ) external payable override {
+        if (_amount > 0) {
+            USDC.transferFrom(msg.sender, address(this), uint256(_amount));
+
+            USDC.approve(address(zap), _amount.abs256());
+
+            // zap $USDC -> $sStataUSDC
+            uint256 sstataAmount =
+                zap.zapIn(_amount.abs256(), _zapMinAmountOut, address(this));
+
+            SSTATA_USDC.approve(address(PERPS_MARKET_PROXY), sstataAmount);
+
+            PERPS_MARKET_PROXY.modifyCollateral(
+                _accountId, SSTATA_SYNTH_MARKET_ID, sstataAmount.toInt256()
+            );
+        } else {
+            if (!isAccountOwner(_accountId, msg.sender)) revert Unauthorized();
+
+            PERPS_MARKET_PROXY.modifyCollateral(
+                _accountId, SSTATA_SYNTH_MARKET_ID, _amount
+            );
+
+            // zap $sStataUSDC -> $USDC
+            /// @dev given the amount is negative,
+            /// simply casting (int -> uint) is unsafe, thus we use .abs()
+            SSTATA_USDC.approve(address(zap), _amount.abs256());
             zap.zapOut(_amount.abs256(), _zapMinAmountOut, msg.sender);
         }
     }
@@ -644,11 +698,11 @@ contract Engine is
         USDC.transferFrom(msg.sender, address(this), amountWithExcess);
 
         USDC.approve(address(zap), amountWithExcess);
-        uint256 usdxAmount =
-            zap.zapIn(amountWithExcess, _zapMinAmountOut, address(this));
+        uint256 sUsdAmount =
+            zap.zapInSUSD(amountWithExcess, _zapMinAmountOut, address(this));
 
-        SUSD.approve(address(zap), usdxAmount);
-        uint256 remaining = zap.burn(usdxAmount, _accountId);
+        SUSD.approve(address(zap), sUsdAmount);
+        uint256 remaining = zap.burn(sUsdAmount, _accountId);
 
         // zap $sUSD -> $USDC
         /// @dev this sends back any overpaid amount to the user
@@ -657,10 +711,10 @@ contract Engine is
         /// because converting back to USDC will be < 0
         SUSD.approve(address(zap), remaining);
         if (remaining > USDC_DUST_THRESHOLD) {
-            zap.zapOut(remaining, 1, msg.sender);
+            zap.zapOutSUSD(remaining, 1, msg.sender);
         }
 
-        emit Burned(_accountId, usdxAmount - remaining);
+        emit Burned(_accountId, sUsdAmount - remaining);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -751,7 +805,31 @@ contract Engine is
 
         // zap $USDC -> $sUSD
         uint256 susdAmount =
-            zap.zapIn(_amount, _amountOutMinimum, address(this));
+            zap.zapInSUSD(_amount, _amountOutMinimum, address(this));
+
+        credit[_accountId] += susdAmount;
+
+        emit Credited(_accountId, susdAmount);
+    }
+
+    /// @inheritdoc IEngine
+    function creditAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _amountOutMinimum
+    ) external payable override {
+        SSTATA_USDC.transferFrom(msg.sender, address(this), _amount);
+
+        SSTATA_USDC.approve(address(zap), _amount);
+
+        // zap $sStataUSDC -> $USDC
+        uint256 usdcAmount = zap.zapOut(_amount, 1, address(this));
+
+        USDC.approve(address(zap), usdcAmount);
+
+        // zap $USDC -> $sUSD
+        uint256 susdAmount =
+            zap.zapInSUSD(usdcAmount, _amountOutMinimum, address(this));
 
         credit[_accountId] += susdAmount;
 
@@ -787,9 +865,35 @@ contract Engine is
         SUSD.approve(address(zap), _amount);
 
         // zap $sUSD -> $USDC
-        uint256 usdcAmount = zap.zapOut(_amount, _zapTolerance, msg.sender);
+        uint256 usdcAmount = zap.zapOutSUSD(_amount, _zapTolerance, msg.sender);
 
         emit Debited(_accountId, usdcAmount);
+    }
+
+    /// @inheritdoc IEngine
+    function debitAccountZapStata(
+        uint128 _accountId,
+        uint256 _amount,
+        uint256 _zapTolerance
+    ) external payable override {
+        if (!isAccountOwner(_accountId, msg.sender)) revert Unauthorized();
+
+        if (_amount > credit[_accountId]) revert InsufficientCredit();
+
+        // Decrement account credit prior to transfer
+        credit[_accountId] -= _amount;
+
+        SUSD.approve(address(zap), _amount);
+
+        // zap $sUSD -> $USDC
+        uint256 usdcAmount = zap.zapOutSUSD(_amount, 1, address(this));
+
+        USDC.approve(address(zap), usdcAmount);
+
+        // zap $USDC -> $sStataUSDC
+        uint256 sstataAmount = zap.zapIn(usdcAmount, _zapTolerance, msg.sender);
+
+        emit Debited(_accountId, sstataAmount);
     }
 
     function _debit(address _caller, uint128 _accountId, uint256 _amount)
