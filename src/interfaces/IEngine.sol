@@ -170,6 +170,16 @@ interface IEngine {
     /// @param amount The amount of sUSD that was burned
     event Burned(uint128 indexed accountId, uint256 amount);
 
+    /// @notice Emitted when sStataUSDC is redeemed for USDC
+    /// @param accountId The ID of the account for which sStataUSDC was redeemed
+    /// @param amountUSDC The amount of USDC received
+    /// @param amountSSTATAUSDC The amount of sStataUSDC unwound
+    event Redeemed(
+        uint128 indexed accountId,
+        uint256 indexed amountUSDC,
+        uint256 amountSSTATAUSDC
+    );
+
     /*//////////////////////////////////////////////////////////////
                              AUTHENTICATION
     //////////////////////////////////////////////////////////////*/

@@ -455,8 +455,16 @@ contract Engine is
             // zap $sStataUSDC -> $USDC
             /// @dev given the amount is negative,
             /// simply casting (int -> uint) is unsafe, thus we use .abs()
-            SSTATA_USDC.approve(address(zap), _amount.abs256());
-            zap.zapOut(_amount.abs256(), _zapMinAmountOut, msg.sender);
+            uint256 sStataUSDCAmount = _amount.abs256();
+            SSTATA_USDC.approve(address(zap), sStataUSDCAmount);
+            uint256 zappedOutUSDC =
+                zap.zapOut(sStataUSDCAmount, _zapMinAmountOut, msg.sender);
+
+            emit Redeemed({
+                accountId: _accountId,
+                amountUSDC: zappedOutUSDC,
+                amountSSTATAUSDC: sStataUSDCAmount
+            });
         }
     }
 
