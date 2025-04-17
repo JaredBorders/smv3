@@ -4,8 +4,8 @@ pragma solidity 0.8.27;
 /// @title Contract for defining constants used in testing
 /// @author JaredBorders (jaredborders@pm.me)
 contract Constants {
-    /// @dev Dec-19-2024 07:22:05 PM +UTC
-    uint256 public constant BASE_BLOCK_NUMBER = 28_116_698;
+    /// @dev Apr-17-2025 09:29:25 PM +UTC
+    uint256 public constant BASE_BLOCK_NUMBER = 29_068_009;
 
     address internal constant OWNER = address(0x01);
 
