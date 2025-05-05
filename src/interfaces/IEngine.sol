@@ -132,7 +132,7 @@ interface IEngine {
     error InsufficientETHDeposit(uint256 sent, uint256 required);
 
     /// @notice thrown when attempting to credit a non-existent account
-    error InvalidPerpsAccountId(uint128 accountId);
+    error InvalidPerpsAccount(uint128 accountId);
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
