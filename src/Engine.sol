@@ -793,6 +793,10 @@ contract Engine is
         payable
         override
     {
+        if (PERPS_MARKET_PROXY.getAccountOwner(_accountId) == address(0)) {
+            revert InvalidPerpsAccount(_accountId);
+        }
+
         credit[_accountId] += _amount;
 
         /// @dev $sUSD transfers that fail will revert
@@ -807,6 +811,9 @@ contract Engine is
         uint256 _amount,
         uint256 _amountOutMinimum
     ) external payable override {
+        if (PERPS_MARKET_PROXY.getAccountOwner(_accountId) == address(0)) {
+            revert InvalidPerpsAccount(_accountId);
+        }
         USDC.transferFrom(msg.sender, address(this), _amount);
 
         USDC.approve(address(zap), _amount);
@@ -826,6 +833,10 @@ contract Engine is
         uint256 _amount,
         uint256 _amountOutMinimum
     ) external payable override {
+        if (PERPS_MARKET_PROXY.getAccountOwner(_accountId) == address(0)) {
+            revert InvalidPerpsAccount(_accountId);
+        }
+
         SSTATA_USDC.transferFrom(msg.sender, address(this), _amount);
 
         SSTATA_USDC.approve(address(zap), _amount);
